@@ -13,9 +13,10 @@ void rellenaTableroAuto(int filas, int colums, int **tablero);
 void rellenaTableroManual(int filas, int colums, int **tablero);
 int calculoAleatorio(int max, int min);
 void imprimirTablero(int **tablero, int filas, int colums);
-int compruebaDisparo(int **tablero, int filas, int colums, int dispFila, int dispColums);
-void juegoAutomatico(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas, int colums);
-void juegoManual(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas, int colums);
+void imprimirTableroArchivo(int **tablero, int filas, int colums, FILE *fichero);
+int compruebaDisparo(int **tablero, int filas, int colums, int dispFila, int dispColums, FILE *fichero);
+void juegoAutomatico(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas, int colums, FILE *fichero);
+void juegoManual(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas, int colums, FILE *fichero);
 int compruebaGanador(int **tablero, int filas, int colums);
 
 
@@ -37,6 +38,12 @@ int main(int argc, char *argv[]){
 	int opcion,i,k;
 	int filas = atoi(argv[1]);
 	int colums = atoi(argv[2]);
+	FILE *fichero = fopen("log.txt", "w");
+	if(fichero == NULL){
+		printf("Error abriendo el archivo \n");
+		exit(-1);
+	}
+	fputs("HUNDIR LA FLOTA by Raul Capellan\n", fichero);
 
 	//Declara los punteros
 	int **tJ1J1;//Tablero J1
@@ -80,7 +87,6 @@ int main(int argc, char *argv[]){
 		printf("     3.Volver\n");
 		printf("     ----------------------------------------\n");
 		scanf("%d",&opcion);
-
 		do{
 			switch(opcion){
 				case 1: printf("BARCOS DEL ORDENADOR");
@@ -91,18 +97,30 @@ int main(int argc, char *argv[]){
 						printf("\n\n/////////////////////////////////////////\n");
 						printf("////////INICIA EL JUEGO//////////////////////\n");
 						printf("/////////////////////////////////////////////\n");
-						juegoManual(tJ1J1,tJ1J2,tJ2J1,tJ2J2,atoi(argv[1]), atoi(argv[2]));
+
+						imprimirTableroArchivo(tJ1J1, atoi(argv[1]), atoi(argv[2]), fichero);
+						//imprimirTableroArchivo(tJ2J2, atoi(argv[1]), atoi(argv[2]), fichero);
+						juegoManual(tJ1J1,tJ1J2,tJ2J1,tJ2J2,atoi(argv[1]), atoi(argv[2]),fichero);
 						return(-1);
 					break;
 				case 2: printf("BARCOS DEL ORDENADOR");
 						rellenaTableroAuto(atoi(argv[1]), atoi(argv[2]), tJ2J2);
 						printf("\nTUS BARCOS\n");
 						rellenaTableroManual(atoi(argv[1]), atoi(argv[2]), tJ1J1);
+						
 
 						printf("\n\n/////////////////////////////////////////\n");
 						printf("////////INICIA EL JUEGO//////////////////////\n");
 						printf("/////////////////////////////////////////////\n");
-						juegoManual(tJ1J1,tJ1J2,tJ2J1,tJ2J2,atoi(argv[1]), atoi(argv[2]));
+
+						fputs("Se inicia el juego : \n", fichero);
+						fputs("\nTablero jugador 1: \n", fichero);
+						imprimirTableroArchivo(tJ1J1, atoi(argv[1]), atoi(argv[2]), fichero);
+						fputs("\nTablero jugador 2: \n", fichero);
+						imprimirTableroArchivo(tJ2J2, atoi(argv[1]), atoi(argv[2]), fichero);
+
+						
+						juegoManual(tJ1J1,tJ1J2,tJ2J1,tJ2J2,atoi(argv[1]), atoi(argv[2]),fichero);
 						return(-1);
 					break;
 				case 3: printf("\n     -----Volver-----\n");
@@ -121,8 +139,16 @@ int main(int argc, char *argv[]){
 		printf("\n\n/////////////////////////////////////////\n");
 		printf("////////INICIA EL JUEGO AUTOMATICO///////\n");
 		printf("/////////////////////////////////////////\n");
-		juegoAutomatico(tJ1J1,tJ1J2,tJ2J1,tJ2J2,atoi(argv[1]), atoi(argv[2]));
+
+		fputs("Se inicia el juego automatico: \n", fichero);
+		fputs("\nTablero jugador 1: \n", fichero);
+		imprimirTableroArchivo(tJ1J1, atoi(argv[1]), atoi(argv[2]), fichero);
+		fputs("\nTablero jugador 2: \n", fichero);
+		imprimirTableroArchivo(tJ2J2, atoi(argv[1]), atoi(argv[2]), fichero);
+
+		juegoAutomatico(tJ1J1,tJ1J2,tJ2J1,tJ2J2,atoi(argv[1]), atoi(argv[2]),fichero);
 	}
+	fclose(fichero);
 }
 
 int menu(){
@@ -469,25 +495,31 @@ void imprimirTablero(int **tablero, int filas, int colums){
 		printf("\n");
 	}
 }
-int compruebaDisparo(int **tablero, int filas, int colums, int dispFila, int dispColums){
+int compruebaDisparo(int **tablero, int filas, int colums, int dispFila, int dispColums,FILE *fichero){
 	if(tablero[dispFila][dispColums] == 1){
 		printf("---!!TOCADO BARCO DE 1!!----\n");
+		fprintf(fichero, "Tocado barco de 1 posicion\n");
 		return 1;
 	}else if(tablero[dispFila][dispColums] == 2){
 		printf("---!!TOCADO BARCO DE 2!!----\n");
+		fprintf(fichero, "Tocado barco de 2 posiciones\n");
 		return 2;
 	}else if(tablero[dispFila][dispColums] == 3){
 		printf("---!!TOCADO BARCO DE 3!!----\n");
+		fprintf(fichero, "Tocado barco de 3 posiciones\n");
 		return 3;
 	}else if(tablero[dispFila][dispColums] == 0){
 		printf("----!!AGUA!!-----\n");
+		fprintf(fichero, "Agua\n");
 		return -1;
 	}
-	else
+	else{
 		printf("!YA HABIA UN BARCO¡\n");
+		fprintf(fichero, "Ya habia un barco\n");
+	}
 	return -9;
 }
-void juegoAutomatico(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas, int colums){
+void juegoAutomatico(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas, int colums,FILE *fichero){
 	int dFila, dColums;
 	int i,k,win;
 	int cont = 0;
@@ -499,8 +531,10 @@ void juegoAutomatico(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas,
 		printf("Fila--> %d\n", dFila );
 		printf("Columna--> %d\n\n", dColums);
 
+		fprintf(fichero, "Tira el jugador 1: (%d,%d)\n", dFila,dColums);
+
 		printf("Jugada %d JUGADOR1: \n", cont);
-		i = compruebaDisparo(tJ2J2, filas, colums, dFila, dColums);
+		i = compruebaDisparo(tJ2J2, filas, colums, dFila, dColums,fichero);
 		if(i == 1 || i == 2 || i == 3){
 			tJ1J2[dFila][dColums] = 9;
 			tJ2J2[dFila][dColums] = 9;
@@ -516,6 +550,7 @@ void juegoAutomatico(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas,
 		win = compruebaGanador(tJ1J2,filas,colums);
 		if(win == 1){
 			printf("            !!!!!!!!!!! ERES EL GANADOR JUGADOR 1¡¡¡¡¡¡¡¡¡¡¡¡\n");
+			fprintf(fichero, "Gana el jugador 1");
 			exit(0);
 		}
 
@@ -527,7 +562,9 @@ void juegoAutomatico(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas,
 		printf("Fila--> %d\n", dFila );
 		printf("Columna--> %d\n\n", dColums);
 
-		i = compruebaDisparo(tJ1J1, filas, colums, dFila, dColums);
+		fprintf(fichero, "Tira el jugador 2: (%d,%d)\n", dFila,dColums);
+
+		i = compruebaDisparo(tJ1J1, filas, colums, dFila, dColums, fichero);
 		if(i == 1 || i == 2 || i == 3){
 			tJ2J1[dFila][dColums] = 9;
 			tJ1J1[dFila][dColums] = 9;
@@ -543,6 +580,7 @@ void juegoAutomatico(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas,
 		win = compruebaGanador(tJ2J1,filas,colums);
 		if(win == 1){
 			printf("            !!!!!!!!!!! ERES EL GANADOR JUGADOR 2¡¡¡¡¡¡¡¡¡¡¡¡\n");
+			fprintf(fichero, "Gana el jugador 2");
 			exit(0);
 		}
 	}
@@ -566,7 +604,7 @@ int compruebaGanador(int **tablero, int filas, int colums){
 	else
 		return 0;
 }
-void juegoManual(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas, int colums){
+void juegoManual(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas, int colums, FILE *fichero){
 	int dFila, dColums;
 	int i,k,win;
 	int cont = 0;
@@ -580,8 +618,10 @@ void juegoManual(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas, int
 			scanf("%d",&dColums);
 		}while((dFila < 0 || dFila >= filas || dColums < 0 || dColums >= colums));
 
+		fprintf(fichero, "Tira el jugador 1: (%d,%d)\n", dFila,dColums);
+
 		printf("Jugada %d JUGADOR1: \n", cont);
-		i = compruebaDisparo(tJ2J2, filas, colums, dFila, dColums);
+		i = compruebaDisparo(tJ2J2, filas, colums, dFila, dColums,fichero);
 		if(i == 1 || i == 2 || i == 3){
 			tJ1J2[dFila][dColums] = 9;
 			tJ2J2[dFila][dColums] = 9;
@@ -596,6 +636,7 @@ void juegoManual(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas, int
 		//Comprueba si ha ganado
 		win = compruebaGanador(tJ1J2,filas,colums);
 		if(win == 1){
+			fprintf(fichero, "Eres el ganador, jugador");
 			printf("            !!!!!!!!!!! ERES EL GANADOR JUGADOR¡¡¡¡¡¡¡¡¡¡¡¡\n");
 			exit(0);
 		}
@@ -608,7 +649,9 @@ void juegoManual(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas, int
 		printf("Fila--> %d\n", dFila );
 		printf("Columna--> %d\n\n", dColums);
 
-		i = compruebaDisparo(tJ1J1, filas, colums, dFila, dColums);
+		fprintf(fichero, "Tira el jugador 2: (%d,%d)\n", dFila,dColums);
+
+		i = compruebaDisparo(tJ1J1, filas, colums, dFila, dColums,fichero);
 		if(i == 1 || i == 2 || i == 3){
 			tJ2J1[dFila][dColums] = 9;
 			tJ1J1[dFila][dColums] = 9;
@@ -624,7 +667,21 @@ void juegoManual(int **tJ1J1,int **tJ1J2,int **tJ2J1,int **tJ2J2, int filas, int
 		win = compruebaGanador(tJ2J1,filas,colums);
 		if(win == 1){
 			printf("            !!!!!!!!!!! ERES EL GANADOR ORDENADOR¡¡¡¡¡¡¡¡¡¡¡¡\n");
+			fprintf(fichero, "El ordenador gana");
 			exit(0);
 		}
+	}
+}
+
+void imprimirTableroArchivo(int **tablero, int filas, int colums, FILE *fichero){
+	int i,k;
+	//fichero = fopen("logs.txt","wt");
+	char cadena [2048];
+
+	for(i = 0; i < filas; i++){
+		for(k = 0; k <colums; k++){
+			fprintf(fichero , "%d ", tablero[i][k]);
+		}
+		fputs("\n", fichero);
 	}
 }
